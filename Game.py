@@ -82,7 +82,7 @@ def placebomb():
             here.bombss = bombs
             if here.fill != "red":
                 Label(bombs,here.centerX,here.centerY,fill=app.textcolor)
-            #app.coverbord[row][col].toFront()
+            app.coverbord[row][col].toFront()
 def uncoverzeros(x,y):
     for row in range(app.bwidth):
         for col in range(app.bheight):
