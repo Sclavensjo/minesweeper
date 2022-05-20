@@ -18,8 +18,7 @@ app.flags = app.bombs
 app.haveuncoverdzeros = False
 app.started = False
 app.paintedbord = False
-
-
+app.mode = Rect(0,0,400,400,fill=rgb(10,20,30),opacity = 10)
 
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
@@ -181,8 +180,10 @@ def onKeyPress(key):
         if key == "space":
             if app.uncovering == True:
                 app.uncovering = False
+                app.mode.fill = rgb(10,20,30)
             else:
                 app.uncovering = True
+                app.mode.fill = rgb(40,40,40)
 def onStep():
     if app.start==True:
         if app.bombsplaced == True:
@@ -206,6 +207,6 @@ def onMousePress(mouseX,mouseY):
         if infoscreen.visible == False:
             falgplacing(mouseX,mouseY)
             lose(mouseX,mouseY)
-
+app.mode.toFront()
 
 cmu_graphics.run()
