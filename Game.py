@@ -18,11 +18,14 @@ app.flags = app.bombs
 app.haveuncoverdzeros = False
 app.started = False
 app.paintedbord = False
-app.mode = Rect(0,0,400,400,fill=rgb(10,20,30),opacity = 10)
+app.mode = Rect(0,0,400,400,fill=rgb(252, 3, 3),opacity = 30,visible = False)
 
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
     Label("MINESWEEPER",200,50,fill=app.textcolor,size = 40),
+    Circle(75,125,5,fill=rgb(100,100,100)),
+    Label("Discover bombs with you mouse, the number on ",200,125,size = 20),
+    Label("the square is the amount of bombs around it",200,140,size = 20),
 
 )
 closebox = Group(
@@ -180,10 +183,10 @@ def onKeyPress(key):
         if key == "space":
             if app.uncovering == True:
                 app.uncovering = False
-                app.mode.fill = rgb(10,20,30)
+                app.mode.fill = rgb(252, 165, 3)
             else:
                 app.uncovering = True
-                app.mode.fill = rgb(40,40,40)
+                app.mode.fill = rgb(252, 3, 3)
 def onStep():
     if app.start==True:
         if app.bombsplaced == True:
@@ -196,6 +199,8 @@ def onMousePress(mouseX,mouseY):
         paintbord()
         app.paintedbord = True
         app.start=True
+        app.mode.visible =True
+        app.mode.toFront()
     if app.start == True:
         if app.bombsplaced == False and infoscreen.visible==False:
             placebomb()
@@ -207,6 +212,6 @@ def onMousePress(mouseX,mouseY):
         if infoscreen.visible == False:
             falgplacing(mouseX,mouseY)
             lose(mouseX,mouseY)
-app.mode.toFront()
+
 
 cmu_graphics.run()
