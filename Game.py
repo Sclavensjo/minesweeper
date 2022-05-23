@@ -1,6 +1,10 @@
+from __future__ import with_statement
+from multiprocessing.sharedctypes import Value
+from tkinter import FALSE
 from turtle import color
 from cmu_graphics import *
 app.start=False
+app.steps = 60
 app.bwidth = 20
 app.bheight = 20
 app.bombs = 60
@@ -19,13 +23,18 @@ app.haveuncoverdzeros = False
 app.started = False
 app.paintedbord = False
 app.mode = Rect(0,0,400,400,fill=rgb(252, 3, 3),opacity = 30,visible = False)
-
+app.hiddentimer = Label(0,0,0,fill=app.textcolor,visible = False)
+app.timer = Label(0,200,50,fill=app.textcolor,size = 20,visible = False)
+app.alluncoverd = 0 
+app.lost = False
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
     Label("MINESWEEPER",200,50,fill=app.textcolor,size = 40),
-    Circle(75,125,5,fill=rgb(100,100,100)),
-    Label("Discover bombs with you mouse, the number on ",200,125,size = 20),
-    Label("the square is the amount of bombs around it",200,140,size = 20),
+    Label("Discover bombs with you mouse, the number on ",200,110,size = 18),
+    Label("the square is the amount of bombs around it",200,130,size = 18),
+    Label("Press space to change to flag mode, while in",200,160,size = 18),
+    Label("flag mode uncoverd squres will turn orange",200,180,size = 18),
+    
 
 )
 closebox = Group(
@@ -37,6 +46,13 @@ losescreen = Group(
     Label("You Lose",200,200,fill=app.textcolor,size = 40)
 )
 losescreen.visible=False
+
+winscreen = Group(
+    Rect(100,100,200,200,fill=rgb(38,68,110),border=rgb(111,230,6),opacity=70),
+    Label("You win with a time of",200,200,fill=app.textcolor,size = 40),
+    Label(app.timer.value,200,220,fill=app.textcolor,size = 40)
+)
+winscreen.visible= False
 def paintbord():
     for row in range(app.bwidth):
         for col in range(app.bheight):
@@ -163,8 +179,22 @@ def lose(x,y):
             if here.hits(x,y) and underhere.fill == app.bombcolor and here.fill != app.flagcolor and app.uncovering == True:
                 losescreen.visible=True
                 losescreen.toFront()
+                app.lost= True
                 app.start = False
                 pass
+def losed():
+    for row in range(app.bwidth):
+        for col in range(app.bheight):
+            here = app.coverbord[row][col]
+            here.visible = False
+def win():
+    for row in range(app.bwidth):
+        for col in range(app.bheight):
+            now = app.coverbord[row][col]
+            if now.visible == False:
+                app.alluncoverd += 1 
+    pass
+
 def falgplacing(x,y):
     for row in range(app.bwidth):
             for col in range(app.bheight):
@@ -191,7 +221,11 @@ def onStep():
     if app.start==True:
         if app.bombsplaced == True:
             zerouncoverings()
-
+    if app.start==True:
+        app.hiddentimer.value += 1
+    app.timer.value = app.hiddentimer.value // 6
+    if app.lost== True:
+        losed() 
 def onMousePress(mouseX,mouseY):
     if closebox.hits(mouseX,mouseY) and app.paintedbord == False:
         infoscreen.visible= False
@@ -212,6 +246,11 @@ def onMousePress(mouseX,mouseY):
         if infoscreen.visible == False:
             falgplacing(mouseX,mouseY)
             lose(mouseX,mouseY)
+            win()
+    if app.alluncoverd == (app.bwidth*app.bheight)-app.bombs:
+        winscreen.visible = True
+        winscreen.toFront()
+        app.start = False
 
 
 cmu_graphics.run()
