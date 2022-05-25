@@ -3,6 +3,7 @@ from multiprocessing.sharedctypes import Value
 from tkinter import FALSE
 from turtle import color
 from cmu_graphics import *
+
 app.start=False
 app.steps = 60
 app.bwidth = 20
@@ -25,8 +26,8 @@ app.paintedbord = False
 app.mode = Rect(0,0,400,400,fill=rgb(252, 3, 3),opacity = 30,visible = False)
 app.hiddentimer = Label(0,0,0,fill=app.textcolor,visible = False)
 app.timer = Label(0,200,50,fill=app.textcolor,size = 20,visible = False)
-app.alluncoverd = 0 
 app.lost = False
+
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
     Label("MINESWEEPER",200,50,fill=app.textcolor,size = 40),
@@ -34,6 +35,9 @@ infoscreen = Group(
     Label("the square is the amount of bombs around it",200,130,size = 18),
     Label("Press space to change to flag mode, while in",200,160,size = 18),
     Label("flag mode uncoverd squres will turn orange",200,180,size = 18),
+    Label("When you feel you have discoverd every tile",200,210,size = 18),
+    Label("with out pressing a bomb",200,230,size = 18),
+    Label("press d to chceck for the win",200,250,size = 18),
     
 
 )
@@ -49,10 +53,14 @@ losescreen.visible=False
 
 winscreen = Group(
     Rect(100,100,200,200,fill=rgb(38,68,110),border=rgb(111,230,6),opacity=70),
-    Label("You win with a time of",200,200,fill=app.textcolor,size = 40),
-    Label(app.timer.value,200,220,fill=app.textcolor,size = 40)
+    Label("You win with a time of",200,160,fill=app.textcolor,size = 20),
+    Label("seconds",200,240,fill=app.textcolor,size = 20),
 )
+app.wintimer = Label(0,200,200,fill=app.textcolor,size = 40)
+winscreen.add(app.wintimer)
 winscreen.visible= False
+
+
 def paintbord():
     for row in range(app.bwidth):
         for col in range(app.bheight):
@@ -182,18 +190,23 @@ def lose(x,y):
                 app.lost= True
                 app.start = False
                 pass
-def losed():
+def losed(cheat):
     for row in range(app.bwidth):
         for col in range(app.bheight):
             here = app.coverbord[row][col]
-            here.visible = False
+            underhere = app.bord[row][col]
+            if cheat == "no":
+                here.visible = False
+            elif cheat == "yes" and underhere.fill != app.bombcolor:
+                here.opacity = 0
 def win():
+    uncoverd = 0
     for row in range(app.bwidth):
         for col in range(app.bheight):
             now = app.coverbord[row][col]
-            if now.visible == False:
-                app.alluncoverd += 1 
-    pass
+            if now.opacity == 0:
+                uncoverd += 1 
+    return uncoverd
 
 def falgplacing(x,y):
     for row in range(app.bwidth):
@@ -217,6 +230,15 @@ def onKeyPress(key):
             else:
                 app.uncovering = True
                 app.mode.fill = rgb(252, 3, 3)
+        if key == "d":
+            didhewin = win()
+            if didhewin >= (app.bwidth*app.bheight)-app.bombs:
+                winscreen.visible = True
+                winscreen.toFront()
+                app.start = False
+                app.wintimer.value = app.hiddentimer.value//10
+        if key == "o":
+            losed("yes")
 def onStep():
     if app.start==True:
         if app.bombsplaced == True:
@@ -225,7 +247,8 @@ def onStep():
         app.hiddentimer.value += 1
     app.timer.value = app.hiddentimer.value // 6
     if app.lost== True:
-        losed() 
+        losed("no")
+
 def onMousePress(mouseX,mouseY):
     if closebox.hits(mouseX,mouseY) and app.paintedbord == False:
         infoscreen.visible= False
@@ -246,11 +269,7 @@ def onMousePress(mouseX,mouseY):
         if infoscreen.visible == False:
             falgplacing(mouseX,mouseY)
             lose(mouseX,mouseY)
-            win()
-    if app.alluncoverd == (app.bwidth*app.bheight)-app.bombs:
-        winscreen.visible = True
-        winscreen.toFront()
-        app.start = False
+
 
 
 cmu_graphics.run()
