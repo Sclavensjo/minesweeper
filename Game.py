@@ -5,12 +5,10 @@ from turtle import color
 from cmu_graphics import *
 
 app.start=False
-app.steps = 60
-app.bwidth = 20
-app.bheight = 20
-app.bombs = 60
-app.coverbord = makeList(app.bwidth, app.bheight)
-app.bord = makeList(app.bwidth, app.bheight)
+app.steps = 30
+app.bwidth = 10
+app.bheight = 10
+app.bombs = 20
 app.bombsplaced = False
 app.bombcolor = "red"
 app.bordcolor = rgb(100,100,100)
@@ -25,25 +23,26 @@ app.started = False
 app.paintedbord = False
 app.mode = Rect(0,0,400,400,fill=rgb(252, 3, 3),opacity = 30,visible = False)
 app.hiddentimer = Label(0,0,0,fill=app.textcolor,visible = False)
-app.timer = Label(0,200,50,fill=app.textcolor,size = 20,visible = False)
 app.lost = False
+app.didhewin = 0
 
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
     Label("MINESWEEPER",200,50,fill=app.textcolor,size = 40),
-    Label("Discover bombs with you mouse, the number on ",200,110,size = 18),
+    Label("Discover bombs with your mouse, the number on ",200,110,size = 18),
     Label("the square is the amount of bombs around it",200,130,size = 18),
     Label("Press space to change to flag mode, while in",200,160,size = 18),
     Label("flag mode uncoverd squres will turn orange",200,180,size = 18),
     Label("When you feel you have discoverd every tile",200,210,size = 18),
     Label("with out pressing a bomb",200,230,size = 18),
     Label("press d to chceck for the win",200,250,size = 18),
+    Label("press s to change size of the bord",200,280,size = 18),
     
 
 )
 closebox = Group(
-    Rect(100,300,200,50,fill=app.covercolor),
-    Label("START",200,325,size=20,fill=app.textcolor),
+    Rect(100,325,200,50,fill=app.covercolor),
+    Label("START",200,350,size=20,fill=app.textcolor),
 )
 losescreen = Group(
     Rect(100,100,200,200,fill=rgb(38,68,110),border=rgb(111,230,6),opacity=70),
@@ -60,6 +59,14 @@ app.wintimer = Label(0,200,200,fill=app.textcolor,size = 40)
 winscreen.add(app.wintimer)
 winscreen.visible= False
 
+def choosesize():
+    size = app.getTextInput("type in a size")
+    bombs = app.getTextInput("Type in amounts of bombs")
+    if size.isdigit() and size != 0:
+        app.bwidth = int(size)
+        app.bheight = int(size)
+    if bombs.isdigit():
+        app.bombs = int(bombs)
 
 def paintbord():
     for row in range(app.bwidth):
@@ -74,6 +81,9 @@ def placebomb():
     for bomb in range(app.bombs):
         bo = choice(app.bord)
         bom = choice(bo)
+        while(bom.fill == app.bombcolor):
+            bo = choice(app.bord)
+            bom = choice(bo)
         bom.fill=app.bombcolor
 
     for row in range(app.bwidth):
@@ -81,32 +91,32 @@ def placebomb():
             here = app.bord[row][col]
             bombs = 0
             if col < app.bwidth-1:
-                if app.bord[row][col+1].fill=="red":
+                if app.bord[row][col+1].fill==app.bombcolor:
                     bombs += 1
             if col < app.bwidth-1 and row > 0:
-                if app.bord[row-1][col+1].fill=="red":
+                if app.bord[row-1][col+1].fill==app.bombcolor:
                     bombs += 1
             if col < app.bwidth-1 and row < app.bwidth-1:
-                if app.bord[row+1][col+1].fill=="red":
+                if app.bord[row+1][col+1].fill==app.bombcolor:
                     bombs += 1
             if col > 0:
-                if app.bord[row][col-1].fill=="red":
+                if app.bord[row][col-1].fill==app.bombcolor:
                     bombs += 1
             if col > 0 and row < app.bwidth-1:
-                if app.bord[row+1][col-1].fill=="red":
+                if app.bord[row+1][col-1].fill==app.bombcolor:
                     bombs +=1
             if col > 0 and row > 0:
-                if app.bord[row-1][col-1].fill=="red":
+                if app.bord[row-1][col-1].fill==app.bombcolor:
                     bombs +=1
             if row > 0:
-                if app.bord[row-1][col].fill=="red":
+                if app.bord[row-1][col].fill==app.bombcolor:
                     bombs +=1
             if row < app.bwidth-1:
-                if app.bord[row+1][col].fill=="red":
+                if app.bord[row+1][col].fill==app.bombcolor:
                     bombs += 1
             
             here.bombss = bombs
-            if here.fill != "red":
+            if here.fill != app.bombcolor:
                 Label(bombs,here.centerX,here.centerY,fill=app.textcolor)
             app.coverbord[row][col].toFront()
 def uncoverzeros(x,y):
@@ -115,19 +125,19 @@ def uncoverzeros(x,y):
             here = app.coverbord[row][col]
             underhere = app.bord[row][col]
             if here.hits(x,y) and underhere.bombss == 0:
-                if col < 19:
+                if col < app.bheight-1:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row][col+1].opacity = 0
-                if col < 19 and row > 0:
+                if col < app.bheight-1 and row > 0:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row-1][col+1].opacity = 0
-                if col < 19 and row < 19:
+                if col < app.bheight-1 and row < app.bheight-1:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row+1][col+1].opacity = 0
                 if col > 0:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row][col-1].opacity = 0
-                if col > 0 and row < 19:
+                if col > 0 and row < app.bheight-1:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row+1][col-1].opacity = 0
                 if col > 0 and row > 0:
@@ -136,7 +146,7 @@ def uncoverzeros(x,y):
                 if row > 0:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row-1][col].opacity = 0
-                if row < 19:
+                if row < app.bheight-1:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row+1][col].opacity = 0
 def zerouncoverings():
@@ -145,19 +155,19 @@ def zerouncoverings():
             here = app.bord[row][col]
             overhere = app.coverbord[row][col]
             if here.bombss == 0 and here.fill!=app.bombcolor:
-                if col < 19:
+                if col < app.bheight-1:
                     if app.coverbord[row][col+1].opacity == 0:
                         overhere.opacity = 0
-                if col < 19 and row > 0:
+                if col < app.bheight-1 and row > 0:
                     if app.coverbord[row-1][col+1].opacity == 0:
                         overhere.opacity = 0
-                if col < 19 and row < 19:
+                if col < app.bheight-1 and row < app.bheight-1:
                     if app.coverbord[row+1][col+1].opacity == 0:
                         overhere.opacity = 0
                 if col > 0:
                     if app.coverbord[row][col-1].opacity == 0:
                         overhere.opacity = 0                     
-                if col > 0 and row < 19:
+                if col > 0 and row < app.bheight-1:
                     if app.coverbord[row+1][col-1].opacity == 0:
                         overhere.opacity = 0
                 if col > 0 and row > 0:
@@ -166,10 +176,10 @@ def zerouncoverings():
                 if row > 0:
                     if app.coverbord[row-1][col].opacity == 0:
                         overhere.opacity = 0
-                if row < 19:
+                if row < app.bheight-1:
                     if app.coverbord[row+1][col].opacity == 0:
                         overhere.opacity = 0
-                if overhere.opacity == 0 and col < 19 and col > 0 and row < 19 and row > 0:
+                if overhere.opacity == 0 and col < app.bheight-1 and col > 0 and row < app.bheight-1 and row > 0:
                         app.coverbord[row][col+1].opacity = 0
                         app.coverbord[row-1][col+1].opacity = 0
                         app.coverbord[row+1][col+1].opacity = 0
@@ -231,26 +241,30 @@ def onKeyPress(key):
                 app.uncovering = True
                 app.mode.fill = rgb(252, 3, 3)
         if key == "d":
-            didhewin = win()
-            if didhewin >= (app.bwidth*app.bheight)-app.bombs:
+            app.didhewin = win()
+            if app.didhewin >= (app.bwidth*app.bheight)-app.bombs:
                 winscreen.visible = True
                 winscreen.toFront()
                 app.start = False
-                app.wintimer.value = app.hiddentimer.value//10
+                app.wintimer.value = app.hiddentimer.value//25
         if key == "o":
             losed("yes")
+    if app.start == False:
+        if key == "s":
+            choosesize()
 def onStep():
     if app.start==True:
         if app.bombsplaced == True:
             zerouncoverings()
     if app.start==True:
         app.hiddentimer.value += 1
-    app.timer.value = app.hiddentimer.value // 6
     if app.lost== True:
         losed("no")
 
 def onMousePress(mouseX,mouseY):
     if closebox.hits(mouseX,mouseY) and app.paintedbord == False:
+        app.coverbord = makeList(app.bwidth, app.bheight)
+        app.bord = makeList(app.bwidth, app.bheight)
         infoscreen.visible= False
         closebox.visible=False
         paintbord()
@@ -258,6 +272,7 @@ def onMousePress(mouseX,mouseY):
         app.start=True
         app.mode.visible =True
         app.mode.toFront()
+    
     if app.start == True:
         if app.bombsplaced == False and infoscreen.visible==False:
             placebomb()
