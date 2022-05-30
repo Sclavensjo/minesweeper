@@ -19,7 +19,6 @@ app.flags = app.bombs
 app.haveuncoverdzeros = False
 app.started = False
 app.paintedbord = False
-app.mode = Rect(0,0,400,400,fill=rgb(252, 3, 3),opacity = 30,visible = False)
 app.starttimer = 0
 app.lost = False
 app.didhewin = 0
@@ -28,15 +27,15 @@ app.didhewin = 0
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
     Label("MINESWEEPER",200,50,fill=app.textcolor,size = 40),
-    Label("Discover bombs with your mouse, the number on ",200,100,size = 18),
-    Label("the square is the amount of bombs around it",200,120,size = 18),
-    Label("Press space to change to flag mode, while in",200,150,size = 18),
-    Label("flag mode uncoverd squres will turn orange",200,170,size = 18),
-    Label("When you feel you have discoverd every tile",200,200,size = 18),
-    Label("without pressing a bomb",200,220,size = 18),
-    Label("press d to check for the win",200,240,size = 18),
-    Label("press s to change size of the bord",200,270,size = 18),
-    Label("Press r to restart",200,300,size = 18),
+    Label("Discover bombs with your mouse, the number on ",200,95,size = 18),
+    Label("the square is the amount of bombs around it",200,115,size = 18),
+    Label("Press space to change to flag mode, while in",200,145,size = 18),
+    Label("flag mode uncoverd squres will turn orange",200,165,size = 18),
+    Label("When you feel you have discoverd every tile",200,195,size = 18),
+    Label("without pressing a bomb",200,215,size = 18),
+    Label("press d to check for the win",200,235,size = 18),
+    Label("press s to change size of the bord",200,265,size = 18),
+    Label("Press r to restart",200,295,size = 18),
 )
 closeboxbox = Rect(100,325,200,50,fill=app.bordcolor)
 startlabel = Label("START",200,350,size=20,fill=app.textcolor)
@@ -74,7 +73,7 @@ def paintbord():
             app.bord[row][col] = Rect(0 + 400/app.bwidth * row, 0 + 400/app.bheight * col,400/app.bwidth,400/app.bheight,fill=app.bordcolor,border=app.bordercolor,borderWidth = 1)
             app.coverbord[row][col] = Rect(0 + 400/app.bwidth * row, 0 + 400/app.bheight * col,400/app.bwidth,400/app.bheight,fill=app.covercolor,border=app.bordercolor,borderWidth = 1)
             pass
-        
+
 def placebomb():
     for bomb in range(app.bombs):
         bo = choice(app.bord)
@@ -237,20 +236,31 @@ def restart():
             overhere = app.coverbord[row][col]
             here = None
             overhere = None
+            app.group.clear()
 def coverbordtofront():
     for col in range(app.bwidth):
         for row in range(app.bwidth):
             here = app.coverbord[row][col]
             here.toFront()
+def flagmode(mode):
+    for col in range(app.bwidth):
+        for row in range(app.bheight):
+            here = app.bord[row][col]
+            if mode == "flag" and here.fill != app.bombcolor:
+                here.fill= rgb(179, 143, 61)
+            elif mode != "flag" and here.fill!=app.bombcolor:
+                here.fill= app.bordcolor
+
+
 def onKeyPress(key):
     if app.start == True:
         if key == "space":
             if app.uncovering == True:
                 app.uncovering = False
-                app.mode.fill = rgb(252, 165, 3)
+                flagmode("flag")
             else:
                 app.uncovering = True
-                app.mode.fill = rgb(252, 3, 3)
+                flagmode("no")
         if key == "d":
             app.didhewin = win()
             if app.didhewin >= (app.bwidth*app.bheight)-app.bombs:
@@ -268,7 +278,6 @@ def onKeyPress(key):
         app.lost = False
         restart()
         paintbord()
-        app.mode.toFront()
         coverbordtofront()
         app.starttimer=time.time()
         placebomb()
@@ -297,8 +306,6 @@ def onMousePress(mouseX,mouseY):
         paintbord()
         app.paintedbord = True
         app.start=True
-        app.mode.visible =True
-        app.mode.toFront()
         app.starttimer = time.time()
     if app.start == True:
         if app.bombsplaced == False and infoscreen.visible==False:
