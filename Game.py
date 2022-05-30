@@ -1,9 +1,7 @@
-from __future__ import with_statement
-from multiprocessing.sharedctypes import Value
-from tkinter import FALSE
-from turtle import color
 from cmu_graphics import *
 
+
+app.title = "Minesweeper 1.0"
 app.start=False
 app.steps = 30
 app.bwidth = 10
@@ -29,15 +27,15 @@ app.didhewin = 0
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
     Label("MINESWEEPER",200,50,fill=app.textcolor,size = 40),
-    Label("Discover bombs with your mouse, the number on ",200,110,size = 18),
-    Label("the square is the amount of bombs around it",200,130,size = 18),
-    Label("Press space to change to flag mode, while in",200,160,size = 18),
-    Label("flag mode uncoverd squres will turn orange",200,180,size = 18),
-    Label("When you feel you have discoverd every tile",200,210,size = 18),
-    Label("with out pressing a bomb",200,230,size = 18),
-    Label("press d to chceck for the win",200,250,size = 18),
-    Label("press s to change size of the bord",200,280,size = 18),
-    
+    Label("Discover bombs with your mouse, the number on ",200,100,size = 18),
+    Label("the square is the amount of bombs around it",200,120,size = 18),
+    Label("Press space to change to flag mode, while in",200,150,size = 18),
+    Label("flag mode uncoverd squres will turn orange",200,170,size = 18),
+    Label("When you feel you have discoverd every tile",200,200,size = 18),
+    Label("with out pressing a bomb",200,220,size = 18),
+    Label("press d to chceck for the win",200,240,size = 18),
+    Label("press s to change size of the bord",200,270,size = 18),
+    Label("Press r to restart",200,300,size = 18),
 
 )
 closebox = Group(
@@ -231,6 +229,18 @@ def falgplacing(x,y):
                     elif app.flags > 0 and app.uncovering == False:
                         rec.fill=app.flagcolor
                         app.flags -= 1
+def restart():
+    for col in range(app.bwidth):
+        for row in range(app.bheight):
+            here = app.bord[row][col]
+            overhere = app.coverbord[row][col]
+            here = None
+            overhere = None
+def coverbordtofront():
+    for col in range(app.bwidth):
+        for row in range(app.bwidth):
+            here = app.coverbord[row][col]
+            here.toFront()
 def onKeyPress(key):
     if app.start == True:
         if key == "space":
@@ -249,6 +259,17 @@ def onKeyPress(key):
                 app.wintimer.value = app.hiddentimer.value//25
         if key == "o":
             losed("yes")
+    if key == "r":
+        losescreen.visible = False
+        winscreen.visible = False
+        app.start = True
+        app.lost = False
+        restart()
+        paintbord()
+        app.bombsplaced = False
+        app.mode.toFront()
+        coverbordtofront()
+            
     if app.start == False:
         if key == "s":
             choosesize()
@@ -280,7 +301,6 @@ def onMousePress(mouseX,mouseY):
             return
         if app.bombsplaced == True:
             uncoverzeros(mouseX,mouseY)
-
         if infoscreen.visible == False:
             falgplacing(mouseX,mouseY)
             lose(mouseX,mouseY)
