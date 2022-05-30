@@ -1,5 +1,5 @@
 from cmu_graphics import *
-
+import time
 
 app.title = "Minesweeper 1.0"
 app.start=False
@@ -20,9 +20,10 @@ app.haveuncoverdzeros = False
 app.started = False
 app.paintedbord = False
 app.mode = Rect(0,0,400,400,fill=rgb(252, 3, 3),opacity = 30,visible = False)
-app.hiddentimer = Label(0,0,0,fill=app.textcolor,visible = False)
+app.starttimer = 0
 app.lost = False
 app.didhewin = 0
+
 
 infoscreen = Group( 
     Rect(0,0,400,400,fill=rgb(38,68,110),opacity = 30,border=rgb(111,230,6)),
@@ -32,15 +33,16 @@ infoscreen = Group(
     Label("Press space to change to flag mode, while in",200,150,size = 18),
     Label("flag mode uncoverd squres will turn orange",200,170,size = 18),
     Label("When you feel you have discoverd every tile",200,200,size = 18),
-    Label("with out pressing a bomb",200,220,size = 18),
-    Label("press d to chceck for the win",200,240,size = 18),
+    Label("without pressing a bomb",200,220,size = 18),
+    Label("press d to check for the win",200,240,size = 18),
     Label("press s to change size of the bord",200,270,size = 18),
     Label("Press r to restart",200,300,size = 18),
-
 )
+closeboxbox = Rect(100,325,200,50,fill=app.bordcolor)
+startlabel = Label("START",200,350,size=20,fill=app.textcolor)
 closebox = Group(
-    Rect(100,325,200,50,fill=app.covercolor),
-    Label("START",200,350,size=20,fill=app.textcolor),
+    closeboxbox,
+    startlabel
 )
 losescreen = Group(
     Rect(100,100,200,200,fill=rgb(38,68,110),border=rgb(111,230,6),opacity=70),
@@ -58,9 +60,9 @@ winscreen.add(app.wintimer)
 winscreen.visible= False
 
 def choosesize():
-    size = app.getTextInput("type in a size")
+    size = app.getTextInput("type in a size (less then 25)")
     bombs = app.getTextInput("Type in amounts of bombs")
-    if size.isdigit() and size != 0:
+    if size.isdigit() or size != 0 or size <= 25:
         app.bwidth = int(size)
         app.bheight = int(size)
     if bombs.isdigit():
@@ -69,12 +71,10 @@ def choosesize():
 def paintbord():
     for row in range(app.bwidth):
         for col in range(app.bheight):
-            squ = Rect(0 + 400/app.bwidth * row, 0 + 400/app.bheight * col,400/app.bwidth,400/app.bheight,fill=app.bordcolor,border=app.bordercolor,borderWidth = 1)
-            squ.bombss = 0
-            app.bord[row][col] = squ
-            csqu = Rect(0 + 400/app.bwidth * row, 0 + 400/app.bheight * col,400/app.bwidth,400/app.bheight,fill=app.covercolor,border=app.bordercolor,borderWidth = 1)
-            app.coverbord[row][col] = csqu
+            app.bord[row][col] = Rect(0 + 400/app.bwidth * row, 0 + 400/app.bheight * col,400/app.bwidth,400/app.bheight,fill=app.bordcolor,border=app.bordercolor,borderWidth = 1)
+            app.coverbord[row][col] = Rect(0 + 400/app.bwidth * row, 0 + 400/app.bheight * col,400/app.bwidth,400/app.bheight,fill=app.covercolor,border=app.bordercolor,borderWidth = 1)
             pass
+        
 def placebomb():
     for bomb in range(app.bombs):
         bo = choice(app.bord)
@@ -88,6 +88,7 @@ def placebomb():
         for col in range(app.bheight):
             here = app.bord[row][col]
             bombs = 0
+            here.bombss = 0
             if col < app.bwidth-1:
                 if app.bord[row][col+1].fill==app.bombcolor:
                     bombs += 1
@@ -253,10 +254,11 @@ def onKeyPress(key):
         if key == "d":
             app.didhewin = win()
             if app.didhewin >= (app.bwidth*app.bheight)-app.bombs:
+                timde = rounded(time.time()-app.starttimer)
                 winscreen.visible = True
                 winscreen.toFront()
                 app.start = False
-                app.wintimer.value = app.hiddentimer.value//25
+                app.wintimer.value = timde
         if key == "o":
             losed("yes")
     if key == "r":
@@ -266,10 +268,10 @@ def onKeyPress(key):
         app.lost = False
         restart()
         paintbord()
-        app.bombsplaced = False
         app.mode.toFront()
         coverbordtofront()
-            
+        app.starttimer=time.time()
+        placebomb()
     if app.start == False:
         if key == "s":
             choosesize()
@@ -277,11 +279,15 @@ def onStep():
     if app.start==True:
         if app.bombsplaced == True:
             zerouncoverings()
-    if app.start==True:
-        app.hiddentimer.value += 1
     if app.lost== True:
         losed("no")
 
+def onMouseMove(mouseX,mouseY):
+    if closebox.contains(mouseX,mouseY):
+        closeboxbox.fill=rgb(126,240,148)
+
+    else:
+        closeboxbox.fill=app.bordcolor
 def onMousePress(mouseX,mouseY):
     if closebox.hits(mouseX,mouseY) and app.paintedbord == False:
         app.coverbord = makeList(app.bwidth, app.bheight)
@@ -293,7 +299,7 @@ def onMousePress(mouseX,mouseY):
         app.start=True
         app.mode.visible =True
         app.mode.toFront()
-    
+        app.starttimer = time.time()
     if app.start == True:
         if app.bombsplaced == False and infoscreen.visible==False:
             placebomb()
