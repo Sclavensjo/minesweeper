@@ -16,7 +16,6 @@ app.flagcolor = rgb (115,90,230)
 app.textcolor = rgb(0,0,0)
 app.uncovering = True
 app.flags = app.bombs
-app.haveuncoverdzeros = False
 app.started = False
 app.paintedbord = False
 app.starttimer = 0
