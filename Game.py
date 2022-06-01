@@ -8,7 +8,7 @@ app.bwidth = 10
 app.bheight = 10
 app.bombs = 20
 app.bombsplaced = False
-app.bombcolor = "red"
+app.bombcolor = rgb(220, 20, 60)
 app.bordcolor = rgb(100,100,100)
 app.bordercolor = rgb(159,85,2)
 app.covercolor = rgb(126,240,148)
@@ -21,7 +21,6 @@ app.started = False
 app.paintedbord = False
 app.starttimer = 0
 app.lost = False
-app.didhewin = 0
 
 
 infoscreen = Group( 
@@ -262,8 +261,8 @@ def onKeyPress(key):
                 app.uncovering = True
                 flagmode("no")
         if key == "d":
-            app.didhewin = win()
-            if app.didhewin >= (app.bwidth*app.bheight)-app.bombs:
+            didhewin = win()
+            if didhewin >= (app.bwidth*app.bheight)-app.bombs:
                 timde = rounded(time.time()-app.starttimer)
                 winscreen.visible = True
                 winscreen.toFront()
