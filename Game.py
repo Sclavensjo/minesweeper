@@ -120,7 +120,7 @@ def uncoverzeros(x,y):
         for col in range(app.bheight):
             here = app.coverbord[row][col]
             underhere = app.bord[row][col]
-            if here.hits(x,y) and underhere.bombss == 0:
+            if here.hits(x,y) and underhere.bombss == 0 and app.uncovering == True:
                 if col < app.bheight-1:
                     if underhere.bombss==0 and underhere.fill != app.bombcolor:
                         app.coverbord[row][col+1].opacity = 0
@@ -234,6 +234,7 @@ def restart():
             overhere = app.coverbord[row][col]
             here = None
             overhere = None
+            app.flags = app.bombs
             app.group.clear()
 def coverbordtofront():
     for col in range(app.bwidth):
@@ -284,7 +285,7 @@ def onKeyPress(key):
             choosesize()
 def onStep():
     if app.start==True:
-        if app.bombsplaced == True:
+        if app.bombsplaced == True and app.uncovering == True:
             zerouncoverings()
     if app.lost== True:
         losed("no")
