@@ -270,7 +270,7 @@ def onKeyPress(key):
                 app.wintimer.value = timde
         if key == "o":
             losed("yes")
-    if key == "r":
+    if key == "r" and app.started == True:
         losescreen.visible = False
         winscreen.visible = False
         app.start = True
@@ -306,6 +306,7 @@ def onMousePress(mouseX,mouseY):
         app.paintedbord = True
         app.start=True
         app.starttimer = time.time()
+        app.started= True
     if app.start == True:
         if app.bombsplaced == False and infoscreen.visible==False:
             placebomb()
